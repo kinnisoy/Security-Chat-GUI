@@ -334,21 +334,21 @@ DWORD WINAPI ClientThreadProc(LPVOID Lparam){ //利用异步IO模型循环读取socket内的
 	int  round = 0;
 	CClientItem ClientItem = *(CClientItem *)Lparam;
 	//SEC_STATUS = FALSE;
+	
+	char hash_data[41], hash_new[41];
+	int iRet;
+	string Encrypted_Data;
+	string Decrypted_Data;
 	while (TRUE)
 	{
 	
 		if ( socket_Select(ClientItem.m_ClientSocket,100,TRUE))
 		{
-			char szRev[MAX_BUFF] = {0};
-			char hash_data[41], hash_new[41];
-			int iRet;
-			
 			iRet = recv(ClientItem.m_ClientSocket, hash_data, 41, 0);
 			if (iRet< 0) {
 				ClientItem.m_pMainWnd->SetRevBoxText(_T(">>Hash出错，消息可能被篡改。"));
 			}
-			string Encrypted_Data;
-			string Decrypted_Data;
+			char szRev[MAX_BUFF] = { 0 };
 			iRet = recv(ClientItem.m_ClientSocket,szRev,sizeof(szRev),0);
 			if (iRet > 0)
 			{
@@ -363,9 +363,14 @@ DWORD WINAPI ClientThreadProc(LPVOID Lparam){ //利用异步IO模型循环读取socket内的
 				strMsg = Decrypted_Data.c_str();
 				//解码结束，密文已经是明文了
 				//##############################################
-				if (!strcmp(hash_data, hash_new))
+				if (!strcmp(hash_data, hash_new)) {
 					ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.m_strIp + _T("(可信)>>") + strMsg);
-				ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
+				}
+				else {
+					ClientItem.m_pMainWnd->SetRevBoxText(ClientItem.m_strIp + _T("(不可信)>>") + strMsg);
+				}
+					
+				//ClientItem.m_pMainWnd->SendClientMsg(strMsg,&ClientItem);
 			}else{
 				//失败  没收到消息  就直接显示就行
 				strMsg = ClientItem.m_strIp + _T(" 已离开");
@@ -477,11 +482,11 @@ void Cxads_PCServerDlg::SendClientMsg(CString strMsg,CClientItem * pWhoseItem)
 	//############发送######################
 	char hash_data[41];
 	//发送前进行加密  即以获得对称密钥,建立安全连接之后
-	string Statement;
+	string Statement,Encrypted_Data;
 	Statement = CW2A(strMsg.GetString());
 	My_HASH(Statement, hash_data);
 	send(m_ClientArray.GetAt(0).m_ClientSocket, hash_data, 41, 0);
-	string Encrypted_Data = DES_Container.Encryption(Statement);
+	Encrypted_Data = DES_Container.Encryption(Statement);
 	//调用加密函数结束
 	//####################################
 	for (int i = 0 ; i < m_ClientArray.GetCount() ; i++)
