@@ -17,6 +17,8 @@ This is an application to chat. Visual programming realizes the chat program bas
 
 ​       The main function was written in `Dlg.cpp`.
 
+
+​        IF it raise an error `error:4996` ,You should `#pragma warning(disable: 4996)`.
 #### Warnings:
 
 ​       The  task was my homework in the university when I am junior .Please delete it within the 24 hours.
@@ -41,6 +43,8 @@ Visual studio2019  \  C++  \  MFC  \  socket
 下载我的代码，文件夹中有`.sln` 的文件，双击使用VS打开。
 
 主要功能实现在`Dlg.cpp`中
+
+如果报错`error:4996` ,请添加 `#pragma warning(disable: 4996)`在Dlg.cpp的开头位置.
 
 #### 警告：
 
