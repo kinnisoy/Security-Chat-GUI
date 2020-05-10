@@ -6,8 +6,8 @@
 #include "xads_PCClient.h"
 #include "xads_PCClientDlg.h"
 #include "afxdialogex.h"
-#include "RSA.h"
 #include <string>
+#pragma warning(disable: 4996)
 
 using namespace std;
 #ifdef _DEBUG
@@ -285,19 +285,21 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 		//DES子密钥生成
 		DES_Container.Subkey_Generation();
 	}
+	char hash_data[41], hash_new[41];
+	int iRead;
+	
+	string Encrypted_Data;
+	string Decrypted_Data;
 	while (TRUE)
 	{
 		if (socket_Select(m_ClientSock,100,TRUE))
 		{
-			char hash_data[41],hash_new[41];
-			int iRead;
-			char szMsg[MAX_BUFF] = {0};
+			
 			iRead = recv(m_ClientSock, hash_data, 41, 0);
 			if (iRead < 0) {
 				pClient->SetRevBoxText(strIp + _T(">>Hash出错，消息可能被篡改。") );
 			}
-			string Encrypted_Data;
-			string Decrypted_Data;
+			char szMsg[MAX_BUFF] = { 0 };
 			iRead = recv(m_ClientSock,szMsg, sizeof(szMsg),0);
 			if (iRead > 0)
 			{
@@ -307,8 +309,11 @@ BOOL Cxads_PCClientDlg::ConnectSocket(Cxads_PCClientDlg * pClient)
 				strMsg = Decrypted_Data.c_str();
 				//strMsg = szMsg;//这里不用改
 				if (!strcmp(hash_data, hash_new)){
-					pClient->SetRevBoxText(strIp + _T("(未篡改)>>") + strMsg);
-				}	
+					pClient->SetRevBoxText(strIp + _T("(可信)>>") + strMsg);
+				}
+				else {
+					pClient->SetRevBoxText(strIp + _T("(不可信)>>") + strMsg);
+				}
 				
 			} 
 			else
@@ -408,11 +413,12 @@ void Cxads_PCClientDlg::OnBnClickedButtonsend()
 	//定义新的CString变量保存加密的消息，用于发送
 	char hash_data[41];
 	string Statement;
+	string Encrypted_Data;
 	Statement = CW2A(strGetMsg.GetString());
 	My_HASH(Statement, hash_data);
 	send(m_ClientSock,hash_data, 41, 0);
-	string Encrypted_Data = DES_Container.Encryption(Statement);
-	iWrite = send(m_ClientSock, Encrypted_Data.c_str(), Encrypted_Data.length(), 0);
+	Encrypted_Data = DES_Container.Encryption(Statement);
+	iWrite = send(m_ClientSock, Encrypted_Data.c_str(),Encrypted_Data.length(), 0);
 	//////调用加密函数结束
 	//#############################################
 	//iWrite = send(m_ClientSock,szBuf,256,0);
