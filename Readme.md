@@ -9,7 +9,7 @@ This is an application to chat. Visual programming realizes the chat program bas
 - Using **Socket** to create a connection.
 - Using **Diffie-Hellman** to exchange the des_key.
 - Using **DES** to keep a secret.
-- Using **Hash** to identify the message which is credible or not.
+- Using **Hash（sha1）** to identify the message which is credible or not.
 
 #### How To Use:
 
@@ -36,7 +36,7 @@ Visual studio2019  \  C++  \  MFC  \  socket
 - 使用socket建立连接，保持通信
 - 使用DH密钥协商协议商定密钥
 - 使用DES加密算法保证消息机密
-- 使用Hash杂凑函数验证可信性
+- 使用Hash（SHA1）杂凑函数验证可信性
 
 #### 如何使用
 
